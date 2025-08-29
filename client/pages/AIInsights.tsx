@@ -92,33 +92,113 @@ export default function AIInsights() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-            <Brain className="h-8 w-8" />
-            AI Investment Insights
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            AI-powered analysis of your portfolio and market opportunities
-          </p>
-        </div>
-        <Button 
-          onClick={handleRefreshInsights}
-          disabled={isGenerating || loading}
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
-          {isGenerating ? 'Analyzing...' : 'Refresh Analysis'}
-        </Button>
-      </div>
+<div className="flex flex-col gap-4">
+  <div>
+    <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2">
+      <Brain className="h-6 w-6 sm:h-8 sm:w-8" />
+      AI Investment Insights
+    </h1>
+    <p className="text-sm sm:text-base text-muted-foreground mt-1">
+      AI-powered analysis of your portfolio
+    </p>
+  </div>
+  <Button 
+    onClick={handleRefreshInsights}
+    disabled={isGenerating || loading}
+    className="w-full sm:w-auto flex items-center justify-center gap-2"
+  >
+    <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
+    {isGenerating ? 'Analyzing...' : 'Refresh'}
+  </Button>
+</div>
 
-      <Tabs defaultValue="insights" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="insights">Live Insights</TabsTrigger>
-          <TabsTrigger value="recommendations">Recommendations</TabsTrigger>
-          <TabsTrigger value="risk">Risk Analysis</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-        </TabsList>
+<Tabs defaultValue="insights" className="space-y-4">
+  <TabsList className="w-full rounded-lg p-1">
+    <div className="hidden lg:grid lg:grid-cols-4 lg:gap-1 lg:w-full">
+      <TabsTrigger 
+        value="insights" 
+        className="px-6 py-3 text-sm font-medium rounded-md transition-all duration-200 ease-in-out focus:outline-none text-center"
+      >
+        Live Insights
+      </TabsTrigger>
+      <TabsTrigger 
+        value="recommendations" 
+        className="px-6 py-3 text-sm font-medium rounded-md transition-all duration-200 ease-in-out focus:outline-none text-center"
+      >
+        Recommendations
+      </TabsTrigger>
+      <TabsTrigger 
+        value="risk" 
+        className="px-6 py-3 text-sm font-medium rounded-md transition-all duration-200 ease-in-out focus:outline-none text-center"
+      >
+        Risk Analysis
+      </TabsTrigger>
+      <TabsTrigger 
+        value="performance" 
+        className="px-6 py-3 text-sm font-medium rounded-md transition-all duration-200 ease-in-out focus:outline-none text-center"
+      >
+        Performance
+      </TabsTrigger>
+    </div>
+    
+    <div className="flex overflow-x-auto scrollbar-hide lg:hidden snap-x snap-mandatory">
+      <TabsTrigger 
+        value="insights" 
+        className="flex-shrink-0 px-6 py-3 text-sm font-medium rounded-md transition-all duration-200 ease-in-out whitespace-nowrap min-w-max focus:outline-none snap-start"
+        onClick={(e) => {
+          // Scroll to start for first tab
+          setTimeout(() => {
+            e.target.closest('.flex').scrollTo({ left: 0, behavior: 'smooth' });
+          }, 50);
+        }}
+      >
+        Live Insights
+      </TabsTrigger>
+      <TabsTrigger 
+        value="recommendations" 
+        className="flex-shrink-0 px-6 py-3 text-sm font-medium rounded-md transition-all duration-200 ease-in-out whitespace-nowrap min-w-max focus:outline-none snap-center"
+        onClick={(e) => {
+          // Center this tab to show context on both sides
+          setTimeout(() => {
+            const container = e.target.closest('.flex');
+            const containerWidth = container.offsetWidth;
+            const scrollLeft = e.target.offsetLeft - (containerWidth / 2) + (e.target.offsetWidth / 2);
+            container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+          }, 50);
+        }}
+      >
+        Recommendations
+      </TabsTrigger>
+      <TabsTrigger 
+        value="risk" 
+        className="flex-shrink-0 px-6 py-3 text-sm font-medium rounded-md transition-all duration-200 ease-in-out whitespace-nowrap min-w-max focus:outline-none snap-center"
+        onClick={(e) => {
+          // Center this tab to show both neighbors
+          setTimeout(() => {
+            const container = e.target.closest('.flex');
+            const containerWidth = container.offsetWidth;
+            const scrollLeft = e.target.offsetLeft - (containerWidth / 2) + (e.target.offsetWidth / 2);
+            container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+          }, 50);
+        }}
+      >
+        Risk Analysis
+      </TabsTrigger>
+      <TabsTrigger 
+        value="performance" 
+        className="flex-shrink-0 px-6 py-3 text-sm font-medium rounded-md transition-all duration-200 ease-in-out whitespace-nowrap min-w-max focus:outline-none snap-end"
+        onClick={(e) => {
+          // Scroll to end for last tab
+          setTimeout(() => {
+            const container = e.target.closest('.flex');
+            container.scrollTo({ left: container.scrollWidth, behavior: 'smooth' });
+          }, 50);
+        }}
+      >
+        Performance
+      </TabsTrigger>
+    </div>
+  </TabsList>
 
         {/* Live Insights */}
         <TabsContent value="insights">
@@ -365,7 +445,7 @@ export default function AIInsights() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="text-center p-4 bg-accent/50 rounded-lg">
                       <div className="text-xl font-bold">{performanceAnalysis.sharpeRatio.toFixed(2)}</div>
                       <p className="text-sm text-muted-foreground">Sharpe Ratio</p>
