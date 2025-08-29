@@ -213,7 +213,7 @@ const MOCK_USERS: LeaderboardUser[] = [
       {
         id: 'newcomer',
         name: 'Newcomer',
-        description: 'Welcome to InvestIQ!',
+        description: 'Welcome to InvestMitra!',
         icon: '🌟',
         rarity: 'COMMON',
         earnedAt: Date.now() - 7 * 24 * 60 * 60 * 1000,

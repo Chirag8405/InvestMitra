@@ -59,7 +59,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <TrendingUp className="h-6 w-6 text-primary-foreground" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-foreground">InvestIQ</h1>
+                <h1 className="text-xl font-bold text-foreground">InvestMitra</h1>
                 <p className="text-xs text-muted-foreground">Smart Trading Platform</p>
               </div>
             </Link>

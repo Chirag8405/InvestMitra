@@ -42,7 +42,7 @@ export interface Portfolio {
 const INITIAL_CASH = 100000; // ₹1,00,000
 const BROKERAGE_RATE = 0.0003; // 0.03% brokerage
 const MIN_BROKERAGE = 20; // Minimum ₹20 brokerage
-const STORAGE_KEY = 'investiq_portfolio_v1';
+const STORAGE_KEY = 'InvestMitra_portfolio_v1';
 
 interface TradingContextValue {
   portfolio: Portfolio;
