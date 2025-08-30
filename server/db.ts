@@ -37,7 +37,7 @@ export async function ensureSchema() {
   // Users
   await sql`
     CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
+      id UUID PRIMARY KEY,
       email TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -47,8 +47,8 @@ export async function ensureSchema() {
   // Portfolio cash per user
   await sql`
     CREATE TABLE IF NOT EXISTS portfolios (
-      id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      id UUID PRIMARY KEY,
+      user_id UUID NOT NULL,
       available_cash NUMERIC NOT NULL DEFAULT 100000,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
@@ -57,8 +57,8 @@ export async function ensureSchema() {
   // Positions
   await sql`
     CREATE TABLE IF NOT EXISTS positions (
-      id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      id UUID PRIMARY KEY,
+      user_id UUID NOT NULL,
       symbol TEXT NOT NULL,
       name TEXT NOT NULL,
       quantity INTEGER NOT NULL,
@@ -73,8 +73,8 @@ export async function ensureSchema() {
   // Orders
   await sql`
     CREATE TABLE IF NOT EXISTS orders (
-      id TEXT PRIMARY KEY,
-      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      id UUID PRIMARY KEY,
+      user_id UUID NOT NULL,
       symbol TEXT NOT NULL,
       name TEXT NOT NULL,
       type TEXT NOT NULL,
