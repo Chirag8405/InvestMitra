@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getSql, isDbConfigured } from "../db";
 import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
+import { randomUUID } from "crypto";
 
 const EMAIL_MIN = 5;
 const PASSWORD_MIN = 8;
@@ -37,16 +38,17 @@ export const register: RequestHandler = async (req, res) => {
     const existing = (await sql`SELECT id FROM users WHERE email = ${body.email}`) as any[];
     if (Array.isArray(existing) && existing.length > 0) return res.status(409).json({ ok: false, error: "email_in_use" });
 
+    const userId = randomUUID();
     const password_hash = await bcrypt.hash(body.password, 10);
-    const rows = (await sql`
-      INSERT INTO users (email, password_hash)
-      VALUES (${body.email}, ${password_hash})
-      RETURNING id
-    `) as any[];
-    const userId = rows[0].id as string;
+    await sql`
+      INSERT INTO users (id, email, password_hash)
+      VALUES (${userId}, ${body.email}, ${password_hash})
+      ON CONFLICT (email) DO NOTHING
+    `;
 
     // create default portfolio row
-    await sql`INSERT INTO portfolios (user_id) VALUES (${userId}) ON CONFLICT DO NOTHING`;
+    const portfolioId = randomUUID();
+    await sql`INSERT INTO portfolios (id, user_id) VALUES (${portfolioId}, ${userId}) ON CONFLICT DO NOTHING`;
 
     const token = await new SignJWT({ uid: userId })
       .setProtectedHeader({ alg: "HS256" })
