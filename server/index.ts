@@ -11,6 +11,7 @@ export function createServer() {
 
   // Middleware
   app.use(cors({ origin: true, credentials: true }));
+  app.use(express.text({ type: "*/*" }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use((req, _res, next) => {
