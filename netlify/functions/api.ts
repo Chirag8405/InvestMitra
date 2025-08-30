@@ -2,7 +2,7 @@ import serverless from "serverless-http";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { ensureSchema } from "../../server/db";
+import { ensureSchema, isDbConfigured } from "../../server/db";
 import { handleDemo } from "../../server/routes/demo";
 import { login, register, me, logout } from "../../server/routes/auth";
 import { getPortfolio, placeOrder, getOrders, resetPortfolio, requireUser } from "../../server/routes/trading";
@@ -24,10 +24,21 @@ app.use((req, _res, next) => {
 });
 app.use(cookieParser());
 
-// Ensure DB schema (no-op if already created)
-ensureSchema().catch((e) => {
-  // eslint-disable-next-line no-console
-  console.error("Schema init failed:", e?.message || e);
+// Ensure DB schema once per cold start and block first request until ready
+let schemaReady: Promise<void> | null = null;
+async function ensureSchemaOnce() {
+  if (!schemaReady) schemaReady = ensureSchema().catch((e) => { schemaReady = null; throw e; });
+  return schemaReady;
+}
+
+app.use(async (_req, _res, next) => {
+  try {
+    if (isDbConfigured()) await ensureSchemaOnce();
+  } catch (e: any) {
+    // eslint-disable-next-line no-console
+    console.error("Schema init failed:", e?.message || e);
+  }
+  next();
 });
 
 // Build API router once
