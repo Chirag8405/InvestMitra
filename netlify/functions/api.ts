@@ -30,6 +30,17 @@ api.get("/ping", (_req, res) => {
   res.json({ message: ping });
 });
 
+// Health/config status (does not expose secrets)
+api.get("/health", (_req, res) => {
+  res.json({
+    ok: true,
+    config: {
+      jwtConfigured: Boolean(process.env.JWT_SECRET),
+      dbConfigured: Boolean(process.env.DATABASE_URL || process.env.NEON_DATABASE_URL || process.env.NETLIFY_DATABASE_URL || process.env.NETLIFY_DATABASE_URL_UNPOOLED || process.env.POSTGRES_URL || process.env.PG_CONNECTION_STRING),
+    },
+  });
+});
+
 api.get("/demo", handleDemo);
 
 // Auth
