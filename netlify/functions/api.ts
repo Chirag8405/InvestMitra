@@ -10,9 +10,15 @@ import { getPortfolio, placeOrder, getOrders, resetPortfolio, requireUser } from
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use((req, _res, next) => {
+  if (typeof (req as any).body === "string") {
+    try { (req as any).body = JSON.parse((req as any).body || "{}"); } catch {}
+  }
+  next();
+});
 app.use(cookieParser());
 
 // Ensure DB schema (no-op if already created)
@@ -28,6 +34,11 @@ const api = express.Router();
 api.get("/ping", (_req, res) => {
   const ping = process.env.PING_MESSAGE ?? "ping";
   res.json({ message: ping });
+});
+
+// Echo endpoint for debugging body parsing
+api.post("/echo", (req, res) => {
+  res.json({ ok: true, headers: req.headers, body: (req as any).body ?? null });
 });
 
 // Health/config status (does not expose secrets)
