@@ -1,6 +1,6 @@
 import type { RequestHandler } from "express";
 import { z } from "zod";
-import { getSql } from "../db";
+import { getSql, isDbConfigured } from "../db";
 import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 
@@ -21,7 +21,6 @@ function getJwtSecret() {
   return new TextEncoder().encode(secret);
 }
 
-function isDbConfigured() { return Boolean(process.env.DATABASE_URL); }
 function isJwtConfigured() { return Boolean(process.env.JWT_SECRET); }
 
 export const register: RequestHandler = async (req, res) => {
