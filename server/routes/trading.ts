@@ -2,6 +2,7 @@ import type { RequestHandler } from "express";
 import { z } from "zod";
 import { getSql } from "../db";
 import { requireUser } from "./auth";
+import crypto from "crypto";
 
 const INITIAL_CASH = 100000;
 const BROKERAGE_RATE = 0.0003; // 0.03%
@@ -120,9 +121,10 @@ export const placeOrder: RequestHandler = async (req: any, res) => {
 
       await sql`UPDATE portfolios SET available_cash = ${availableCash - totalAmount} WHERE user_id = ${userId}`;
 
+      const orderId = crypto.randomUUID();
       await sql`
-        INSERT INTO orders (user_id, symbol, name, type, order_type, quantity, price, status, timestamp, brokerage, total_amount)
-        VALUES (${userId}, ${body.symbol}, ${body.name}, ${body.type}, ${body.orderType}, ${body.quantity}, ${body.price}, 'EXECUTED', now(), ${brokerage}, ${grossAmount + brokerage})
+        INSERT INTO orders (id, user_id, symbol, name, type, order_type, quantity, price, status, timestamp, brokerage, total_amount)
+        VALUES (${orderId}, ${userId}, ${body.symbol}, ${body.name}, ${body.type}, ${body.orderType}, ${body.quantity}, ${body.price}, 'EXECUTED', now(), ${brokerage}, ${grossAmount + brokerage})
       `;
 
       return res.json({ ok: true });
@@ -153,9 +155,10 @@ export const placeOrder: RequestHandler = async (req: any, res) => {
 
       await sql`UPDATE portfolios SET available_cash = ${availableCash + netProceeds} WHERE user_id = ${userId}`;
 
+      const orderId = crypto.randomUUID();
       await sql`
-        INSERT INTO orders (user_id, symbol, name, type, order_type, quantity, price, status, timestamp, brokerage, total_amount)
-        VALUES (${userId}, ${body.symbol}, ${body.name}, ${body.type}, ${body.orderType}, ${body.quantity}, ${body.price}, 'EXECUTED', now(), ${sellBrokerage}, ${netProceeds})
+        INSERT INTO orders (id, user_id, symbol, name, type, order_type, quantity, price, status, timestamp, brokerage, total_amount)
+        VALUES (${orderId}, ${userId}, ${body.symbol}, ${body.name}, ${body.type}, ${body.orderType}, ${body.quantity}, ${body.price}, 'EXECUTED', now(), ${sellBrokerage}, ${netProceeds})
       `;
 
       return res.json({ ok: true });
