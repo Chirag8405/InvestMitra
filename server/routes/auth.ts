@@ -27,7 +27,10 @@ export const register: RequestHandler = async (req, res) => {
   try {
     if (!isDbConfigured()) return res.status(200).json({ ok: false, error: "db_not_configured" });
     if (!isJwtConfigured()) return res.status(200).json({ ok: false, error: "jwt_not_configured" });
-    const input: any = typeof (req as any).body === "string" ? JSON.parse((req as any).body || "{}") : (req as any).body ?? {};
+    const raw: any = (req as any).body;
+    let input: any = raw ?? {};
+    if (Buffer.isBuffer(raw)) { try { input = JSON.parse(raw.toString("utf8") || "{}"); } catch { input = {}; } }
+    else if (typeof raw === "string") { try { input = JSON.parse(raw || "{}"); } catch { input = {}; } }
     const body = registerSchema.parse(input);
     const sql = getSql();
 
@@ -70,7 +73,10 @@ export const login: RequestHandler = async (req, res) => {
   try {
     if (!isDbConfigured()) return res.status(200).json({ ok: false, error: "db_not_configured" });
     if (!isJwtConfigured()) return res.status(200).json({ ok: false, error: "jwt_not_configured" });
-    const input: any = typeof (req as any).body === "string" ? JSON.parse((req as any).body || "{}") : (req as any).body ?? {};
+    const raw: any = (req as any).body;
+    let input: any = raw ?? {};
+    if (Buffer.isBuffer(raw)) { try { input = JSON.parse(raw.toString("utf8") || "{}"); } catch { input = {}; } }
+    else if (typeof raw === "string") { try { input = JSON.parse(raw || "{}"); } catch { input = {}; } }
     const body = loginSchema.parse(input);
     const sql = getSql();
 
