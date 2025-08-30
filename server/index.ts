@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { handleDemo } from "./routes/demo";
-import { ensureSchema } from "./db";
+import { ensureSchema, isDbConfigured } from "./db";
 import { login, register, me, logout } from "./routes/auth";
 import { getPortfolio, placeOrder, getOrders, resetPortfolio, requireUser } from "./routes/trading";
 
@@ -24,10 +24,20 @@ export function createServer() {
   });
   app.use(cookieParser());
 
-  // Ensure DB schema (no-op if already created)
-  ensureSchema().catch((e) => {
-    // eslint-disable-next-line no-console
-    console.error("Schema init failed:", e?.message || e);
+  // Ensure DB schema once and block first request until ready
+  let schemaReady: Promise<void> | null = null;
+  async function ensureSchemaOnce() {
+    if (!schemaReady) schemaReady = ensureSchema().catch((e) => { schemaReady = null; throw e; });
+    return schemaReady;
+  }
+  app.use(async (_req, _res, next) => {
+    try {
+      if (isDbConfigured()) await ensureSchemaOnce();
+    } catch (e: any) {
+      // eslint-disable-next-line no-console
+      console.error("Schema init failed:", e?.message || e);
+    }
+    next();
   });
 
   // Build API router once
