@@ -3,10 +3,28 @@ import { neon } from "@neondatabase/serverless";
 // Lazy singleton for SQL client
 let _sql: ReturnType<typeof neon> | null = null;
 
+export function getDatabaseUrl() {
+  const candidates = [
+    "DATABASE_URL",
+    "NEON_DATABASE_URL",
+    "POSTGRES_URL",
+    "PG_CONNECTION_STRING",
+  ] as const;
+  for (const key of candidates) {
+    const val = process.env[key];
+    if (val && typeof val === "string" && val.trim().length > 0) return val.trim();
+  }
+  return "";
+}
+
+export function isDbConfigured() {
+  return Boolean(getDatabaseUrl());
+}
+
 export function getSql() {
-  const url = process.env.DATABASE_URL;
+  const url = getDatabaseUrl();
   if (!url) {
-    throw new Error("DATABASE_URL is not set. Provide your Neon connection string in env.");
+    throw new Error("Database connection string not set. Set DATABASE_URL or NEON_DATABASE_URL.");
   }
   if (!_sql) _sql = neon(url);
   return _sql;
