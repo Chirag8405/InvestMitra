@@ -1,5 +1,11 @@
-import serverless from "serverless-http";
+// netlify/functions/api.js
+const express = require("express");
+const serverless = require("serverless-http");
 
-import { createServer } from "../../server";
+const app = express();
 
-export const handler = serverless(createServer());
+app.get("/api/hello", (req, res) => {
+  res.json({ message: "Hello from Express on Netlify!" });
+});
+
+module.exports.handler = serverless(app);
