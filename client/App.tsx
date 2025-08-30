@@ -15,7 +15,10 @@ import AIInsights from "./pages/AIInsights";
 import Learn from "./pages/Learn";
 import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import { TradingProvider } from "@/hooks/use-trading";
+import { AuthProvider } from "@/hooks/use-auth";
 import { ErrorBoundary } from "@/components/error-boundary";
 
 const queryClient = new QueryClient();
@@ -32,8 +35,9 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <TradingProvider>
-            <Layout>
+          <AuthProvider>
+            <TradingProvider>
+              <Layout>
               <ErrorBoundary>
                 <Routes>
                   <Route path="/" element={<Index />} />
@@ -42,12 +46,15 @@ const App = () => (
                   <Route path="/ai-insights" element={<AIInsights />} />
                   <Route path="/learn" element={<Learn />} />
                   <Route path="/leaderboard" element={<Leaderboard />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </ErrorBoundary>
             </Layout>
-          </TradingProvider>
+            </TradingProvider>
+          </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>

@@ -176,7 +176,7 @@ export default function Learn() {
       </div>
 
       <Tabs defaultValue="modules" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3">
           <TabsTrigger value="modules">Learning Modules</TabsTrigger>
           <TabsTrigger value="achievements">Achievements</TabsTrigger>
           <TabsTrigger value="progress">My Progress</TabsTrigger>
@@ -451,7 +451,7 @@ export default function Learn() {
                 <CardTitle>Learning Statistics</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center p-4 bg-accent/50 rounded-lg">
                     <div className="text-2xl font-bold">{progress.level}</div>
                     <p className="text-sm text-muted-foreground">Current Level</p>

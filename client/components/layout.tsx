@@ -15,6 +15,7 @@ import {
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useTrading } from "@/hooks/use-trading";
+import { useAuth } from "@/hooks/use-auth";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
@@ -31,6 +32,40 @@ function formatCurrency(amount: number) {
     currency: 'INR',
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+function AuthControls() {
+  const { user, logout } = useAuth();
+  if (!user) {
+    return (
+      <Link to="/login">
+        <Button variant="outline" size="sm">Login</Button>
+      </Link>
+    );
+  }
+  return (
+    <div className="hidden sm:flex items-center gap-2">
+      <Badge variant="secondary" className="text-xs">{user.email}</Badge>
+      <Button variant="outline" size="sm" onClick={() => logout()}>Logout</Button>
+    </div>
+  );
+}
+
+function MobileAuthControls() {
+  const { user, logout } = useAuth();
+  if (!user) {
+    return (
+      <Link to="/login">
+        <Button variant="outline" size="sm" className="w-full">Login</Button>
+      </Link>
+    );
+  }
+  return (
+    <div className="flex items-center gap-2 w-full">
+      <Badge variant="secondary" className="text-xs flex-1 text-center">{user.email}</Badge>
+      <Button variant="outline" size="sm" onClick={() => logout()} className="flex-1">Logout</Button>
+    </div>
+  );
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -59,7 +94,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <TrendingUp className="h-6 w-6 text-primary-foreground" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-foreground">InvestIQ</h1>
+                <h1 className="text-xl font-bold text-foreground">InvestMitra</h1>
                 <p className="text-xs text-muted-foreground">Smart Trading Platform</p>
               </div>
             </Link>
@@ -93,6 +128,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </Badge>
 
               <ThemeToggle />
+
+              {/* Auth */}
+              <AuthControls />
 
               {/* Mobile menu button */}
               <Button
@@ -140,10 +178,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   );
                 })}
               </nav>
-              <div className="mt-3 pt-3 border-t">
+              <div className="mt-3 pt-3 border-t space-y-3">
                 <Badge variant="outline" className="bg-success/10 text-success border-success/20">
                   Virtual Balance: {formatCurrency(portfolio.totalValue)}
                 </Badge>
+                <div className="flex items-center justify-between">
+                  <MobileAuthControls />
+                </div>
               </div>
             </div>
           </div>

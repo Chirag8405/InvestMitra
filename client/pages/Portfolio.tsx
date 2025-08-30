@@ -9,7 +9,7 @@ import {
   ArrowDownRight,
   PieChart,
   BarChart3,
-  DollarSign
+  IndianRupeeIcon
 } from "lucide-react";
 import { useTrading } from "@/hooks/use-trading";
 import { useMarketData } from "@/hooks/use-market-data";

@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Stock } from './use-market-data';
+import { useAuth } from './use-auth';
 
 export interface Position {
   symbol: string;
@@ -42,7 +43,7 @@ export interface Portfolio {
 const INITIAL_CASH = 100000; // ₹1,00,000
 const BROKERAGE_RATE = 0.0003; // 0.03% brokerage
 const MIN_BROKERAGE = 20; // Minimum ₹20 brokerage
-const STORAGE_KEY = 'investiq_portfolio_v1';
+const STORAGE_KEY = 'InvestMitra_portfolio_v1';
 
 interface TradingContextValue {
   portfolio: Portfolio;
@@ -95,12 +96,31 @@ function loadPortfolio(): Portfolio {
 
 export function TradingProvider({ children }: { children: React.ReactNode }) {
   const [portfolio, setPortfolio] = useState<Portfolio>(() => loadPortfolio());
+  const { user } = useAuth();
 
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(portfolio));
     } catch {}
   }, [portfolio]);
+
+  const api = useCallback(async (path: string, init?: RequestInit) => {
+    const res = await fetch(path, { credentials: 'include', ...init, headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) } });
+    return res;
+  }, []);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!user) return;
+      try {
+        const res = await api('/api/portfolio');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.ok && data.portfolio) setPortfolio(data.portfolio as Portfolio);
+      } catch {}
+    };
+    load();
+  }, [user, api]);
 
   const calculateBrokerage = useCallback((amount: number): number => {
     const calculated = amount * BROKERAGE_RATE;
@@ -160,6 +180,22 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
       return { success: false, message: 'Limit price must be a positive number' };
     }
 
+    if (user) {
+      (async () => {
+        try {
+          const res = await api('/api/orders', { method: 'POST', body: JSON.stringify({ symbol: stock.symbol, name: stock.name, type, orderType, quantity, price }) });
+          if (res.ok) {
+            const pfRes = await api('/api/portfolio');
+            if (pfRes.ok) {
+              const data = await pfRes.json();
+              if (data.ok && data.portfolio) setPortfolio(data.portfolio as Portfolio);
+            }
+          }
+        } catch {}
+      })();
+      return { success: true, message: `${type === 'BUY' ? 'Buy' : 'Sell'} order placed` };
+    }
+
     const grossAmount = quantity * price;
     const brokerage = calculateBrokerage(grossAmount);
 
@@ -170,7 +206,7 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
       if (totalAmount > portfolio.availableCash) {
         return {
           success: false,
-          message: `Insufficient funds. Required: ₹${totalAmount.toFixed(2)}, Available: ₹${portfolio.availableCash.toFixed(2)}`
+          message: `Insufficient funds. Required: ₹${totalAmount.toFixed(2)}, Available: ��${portfolio.availableCash.toFixed(2)}`
         };
       }
 
@@ -299,7 +335,7 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
         orderId,
       };
     }
-  }, [portfolio.availableCash, portfolio.positions, calculateBrokerage]);
+  }, [portfolio.availableCash, portfolio.positions, calculateBrokerage, user, api]);
 
   const getPosition = useCallback((symbol: string) => {
     return portfolio.positions.find(pos => pos.symbol === symbol);
@@ -310,6 +346,17 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
   }, [portfolio.orders]);
 
   const resetPortfolio = useCallback(() => {
+    if (user) {
+      api('/api/portfolio/reset', { method: 'POST' }).then(async () => {
+        const res = await api('/api/portfolio');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ok && data.portfolio) setPortfolio(data.portfolio as Portfolio);
+        }
+      }).catch(() => {});
+      return;
+    }
+
     setPortfolio({
       totalValue: INITIAL_CASH,
       investedAmount: 0,
@@ -321,7 +368,7 @@ export function TradingProvider({ children }: { children: React.ReactNode }) {
       positions: [],
       orders: [],
     });
-  }, []);
+  }, [api, user]);
 
   const value = useMemo<TradingContextValue>(() => ({
     portfolio,

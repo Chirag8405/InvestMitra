@@ -141,7 +141,7 @@ export default function Leaderboard() {
       </div>
 
       {/* Performance Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Traders</CardTitle>
@@ -184,7 +184,7 @@ export default function Leaderboard() {
       </div>
 
       <Tabs defaultValue="global" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
           <TabsTrigger value="global">Global Rankings</TabsTrigger>
           <TabsTrigger value="competitions">Competitions</TabsTrigger>
           <TabsTrigger value="badges">Badges & Awards</TabsTrigger>
@@ -582,7 +582,7 @@ export default function Leaderboard() {
                   <CardDescription>Badges you've earned on your trading journey</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                     {currentUser.badges.map((badge) => (
                       <Card key={badge.id} className="p-4 text-center">
                         <div className="text-3xl mb-2">{badge.icon}</div>
