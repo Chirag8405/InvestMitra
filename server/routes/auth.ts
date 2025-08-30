@@ -60,7 +60,7 @@ export const register: RequestHandler = async (req, res) => {
 
     res.status(201).json({ ok: true, user: { id: userId, email: body.email } });
   } catch (err) {
-    if (err instanceof z.ZodError) return res.status(400).json({ ok: false, error: "bad_request" });
+    if (err instanceof z.ZodError) return res.status(400).json({ ok: false, error: "bad_request", issues: err.issues });
     res.status(500).json({ ok: false, error: "server_error" });
   }
 };
@@ -97,7 +97,7 @@ export const login: RequestHandler = async (req, res) => {
 
     res.json({ ok: true, user: { id: user.id, email: body.email } });
   } catch (err) {
-    if (err instanceof z.ZodError) return res.status(400).json({ ok: false, error: "bad_request" });
+    if (err instanceof z.ZodError) return res.status(400).json({ ok: false, error: "bad_request", issues: err.issues });
     res.status(500).json({ ok: false, error: "server_error" });
   }
 };
