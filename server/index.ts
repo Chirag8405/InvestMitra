@@ -11,12 +11,14 @@ export function createServer() {
 
   // Middleware
   app.use(cors({ origin: true, credentials: true }));
-  app.use(express.text({ type: "*/*" }));
-  app.use(express.json());
+  app.use(express.json({ type: "*/*" }));
   app.use(express.urlencoded({ extended: true }));
   app.use((req, _res, next) => {
-    if (typeof (req as any).body === "string") {
-      try { (req as any).body = JSON.parse((req as any).body || "{}"); } catch {}
+    const anyReq: any = req as any;
+    if (Buffer.isBuffer(anyReq.body)) {
+      try { anyReq.body = JSON.parse(anyReq.body.toString("utf8") || "{}"); } catch { anyReq.body = {}; }
+    } else if (typeof anyReq.body === "string") {
+      try { anyReq.body = JSON.parse(anyReq.body || "{}"); } catch { anyReq.body = {}; }
     }
     next();
   });
