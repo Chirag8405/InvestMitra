@@ -6,8 +6,6 @@
 
 [functions]
   node_bundler = "esbuild"
-  # Ensure these Node modules are packaged with the serverless functions
-  external_node_modules = ["express", "cors", "cookie-parser"]
   
 [[redirects]]
   force = true
