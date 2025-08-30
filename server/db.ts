@@ -1,0 +1,74 @@
+import { neon } from "@neondatabase/serverless";
+
+// Lazy singleton for SQL client
+let _sql: ReturnType<typeof neon> | null = null;
+
+export function getSql() {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error("DATABASE_URL is not set. Provide your Neon connection string in env.");
+  }
+  if (!_sql) _sql = neon(url);
+  return _sql;
+}
+
+export async function ensureSchema() {
+  const sql = getSql();
+  // Enable pgcrypto for gen_random_uuid()
+  await sql`CREATE EXTENSION IF NOT EXISTS pgcrypto`;
+
+  // Users
+  await sql`
+    CREATE TABLE IF NOT EXISTS users (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+
+  // Portfolio cash per user
+  await sql`
+    CREATE TABLE IF NOT EXISTS portfolios (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      available_cash NUMERIC NOT NULL DEFAULT 100000,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+
+  // Positions
+  await sql`
+    CREATE TABLE IF NOT EXISTS positions (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      symbol TEXT NOT NULL,
+      name TEXT NOT NULL,
+      quantity INTEGER NOT NULL,
+      avg_price NUMERIC NOT NULL,
+      invested_value NUMERIC NOT NULL,
+      current_price NUMERIC NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS idx_positions_user_symbol ON positions(user_id, symbol)`;
+
+  // Orders
+  await sql`
+    CREATE TABLE IF NOT EXISTS orders (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      symbol TEXT NOT NULL,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL,
+      order_type TEXT NOT NULL,
+      quantity INTEGER NOT NULL,
+      price NUMERIC NOT NULL,
+      status TEXT NOT NULL,
+      timestamp TIMESTAMPTZ NOT NULL,
+      brokerage NUMERIC NOT NULL,
+      total_amount NUMERIC NOT NULL
+    )
+  `;
+  await sql`CREATE INDEX IF NOT EXISTS idx_orders_user_time ON orders(user_id, timestamp DESC)`;
+}

@@ -39,9 +39,12 @@ import {
 import { useMarketData } from "@/hooks/use-market-data";
 import { useTrading } from "@/hooks/use-trading";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Trading() {
   const { stocks, loading, isMarketOpen, searchStocks, filterBySector, getSectors } = useMarketData();
+  const { user } = useAuth();
   const { portfolio, placeOrder, getPosition, getOrderHistory, updatePortfolioWithCurrentPrices } = useTrading();
   const { toast } = useToast();
 
@@ -178,6 +181,16 @@ export default function Trading() {
 
   return (
     <div className="space-y-6">
+      {/* Auth banner */}
+      {!user && (
+        <Alert>
+          <AlertTitle>Tip</AlertTitle>
+          <AlertDescription>
+            Sign in to sync your portfolio and orders across devices. Your current session is stored locally.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -237,7 +250,7 @@ export default function Trading() {
       </Card>
 
       <Tabs defaultValue="stocks" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
           <TabsTrigger value="stocks">All Stocks</TabsTrigger>
           <TabsTrigger value="watchlist">Watchlist</TabsTrigger>
           <TabsTrigger value="positions">My Positions</TabsTrigger>

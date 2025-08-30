@@ -8,14 +8,13 @@ import {
   TrendingDown,
   ArrowUpRight,
   ArrowDownRight,
-  DollarSign,
+  IndianRupeeIcon,
   Target,
   BookOpen,
   Trophy,
   Bell,
   Plus,
-  Brain,
-  IndianRupeeIcon
+  Brain
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTrading } from "@/hooks/use-trading";
@@ -140,7 +139,7 @@ export default function Index() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Total Value</p>
               <p className="text-2xl font-bold">{formatCurrency(portfolio.totalValue)}</p>
