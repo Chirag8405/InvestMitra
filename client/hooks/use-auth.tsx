@@ -38,23 +38,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refresh();
   }, [refresh]);
 
+  const toMessage = (code?: string) => {
+    switch (code) {
+      case 'email_in_use': return 'This email is already registered';
+      case 'invalid_credentials': return 'Incorrect email or password';
+      case 'bad_request': return 'Please check your input and try again';
+      case 'db_not_configured': return 'Service temporarily unavailable (database not configured)';
+      case 'jwt_not_configured': return 'Service temporarily unavailable (auth not configured)';
+      case 'network_error': return 'Network error. Please try again';
+      case 'server_error': return 'Something went wrong. Please try again';
+      default: return code || 'Something went wrong. Please try again';
+    }
+  };
+
   const loginFn = useCallback(async (email: string, password: string) => {
     try {
       const data = await api<{ ok: boolean; error?: string }>("/api/auth/login", { method: 'POST', body: JSON.stringify({ email, password }) });
-      if (data.ok) await refresh();
-      return data;
+      if (data.ok) { await refresh(); return { ok: true }; }
+      return { ok: false, error: toMessage(data.error) };
     } catch {
-      return { ok: false, error: 'network_error' };
+      return { ok: false, error: toMessage('network_error') };
     }
   }, [refresh]);
 
   const signupFn = useCallback(async (email: string, password: string) => {
     try {
       const data = await api<{ ok: boolean; error?: string }>("/api/auth/register", { method: 'POST', body: JSON.stringify({ email, password }) });
-      if (data.ok) await refresh();
-      return data;
+      if (data.ok) { await refresh(); return { ok: true }; }
+      return { ok: false, error: toMessage(data.error) };
     } catch {
-      return { ok: false, error: 'network_error' };
+      return { ok: false, error: toMessage('network_error') };
     }
   }, [refresh]);
 

@@ -21,8 +21,13 @@ function getJwtSecret() {
   return new TextEncoder().encode(secret);
 }
 
+function isDbConfigured() { return Boolean(process.env.DATABASE_URL); }
+function isJwtConfigured() { return Boolean(process.env.JWT_SECRET); }
+
 export const register: RequestHandler = async (req, res) => {
   try {
+    if (!isDbConfigured()) return res.status(200).json({ ok: false, error: "db_not_configured" });
+    if (!isJwtConfigured()) return res.status(200).json({ ok: false, error: "jwt_not_configured" });
     const body = registerSchema.parse(req.body);
     const sql = getSql();
 
@@ -63,6 +68,8 @@ export const register: RequestHandler = async (req, res) => {
 
 export const login: RequestHandler = async (req, res) => {
   try {
+    if (!isDbConfigured()) return res.status(200).json({ ok: false, error: "db_not_configured" });
+    if (!isJwtConfigured()) return res.status(200).json({ ok: false, error: "jwt_not_configured" });
     const body = loginSchema.parse(req.body);
     const sql = getSql();
 
@@ -98,6 +105,7 @@ export const login: RequestHandler = async (req, res) => {
 
 export const me: RequestHandler = async (req, res) => {
   try {
+    if (!isJwtConfigured()) return res.status(401).json({ ok: false, error: "jwt_not_configured" });
     const token = req.cookies?.[TOKEN_NAME];
     if (!token) return res.status(401).json({ ok: false });
 
@@ -119,6 +127,7 @@ export const logout: RequestHandler = async (_req, res) => {
 
 export async function requireUser(req: any, res: any, next: any) {
   try {
+    if (!isJwtConfigured()) return res.status(401).json({ ok: false, error: "jwt_not_configured" });
     const token = req.cookies?.[TOKEN_NAME];
     if (!token) return res.status(401).json({ ok: false, error: "unauthorized" });
     const { payload } = await jwtVerify(token, getJwtSecret());
