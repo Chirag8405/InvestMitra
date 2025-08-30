@@ -27,7 +27,8 @@ export const register: RequestHandler = async (req, res) => {
   try {
     if (!isDbConfigured()) return res.status(200).json({ ok: false, error: "db_not_configured" });
     if (!isJwtConfigured()) return res.status(200).json({ ok: false, error: "jwt_not_configured" });
-    const body = registerSchema.parse(req.body);
+    const input: any = typeof (req as any).body === "string" ? JSON.parse((req as any).body || "{}") : (req as any).body ?? {};
+    const body = registerSchema.parse(input);
     const sql = getSql();
 
     const existing = (await sql`SELECT id FROM users WHERE email = ${body.email}`) as any[];
@@ -69,7 +70,8 @@ export const login: RequestHandler = async (req, res) => {
   try {
     if (!isDbConfigured()) return res.status(200).json({ ok: false, error: "db_not_configured" });
     if (!isJwtConfigured()) return res.status(200).json({ ok: false, error: "jwt_not_configured" });
-    const body = loginSchema.parse(req.body);
+    const input: any = typeof (req as any).body === "string" ? JSON.parse((req as any).body || "{}") : (req as any).body ?? {};
+    const body = loginSchema.parse(input);
     const sql = getSql();
 
     const users = (await sql`
