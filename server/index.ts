@@ -21,25 +21,32 @@ export function createServer() {
     console.error("Schema init failed:", e?.message || e);
   });
 
+  // Build API router once
+  const api = express.Router();
+
   // Example API routes
-  app.get("/api/ping", (_req, res) => {
+  api.get("/ping", (_req, res) => {
     const ping = process.env.PING_MESSAGE ?? "ping";
     res.json({ message: ping });
   });
 
-  app.get("/api/demo", handleDemo);
+  api.get("/demo", handleDemo);
 
   // Auth
-  app.post("/api/auth/register", register);
-  app.post("/api/auth/login", login);
-  app.get("/api/auth/me", me);
-  app.post("/api/auth/logout", logout);
+  api.post("/auth/register", register);
+  api.post("/auth/login", login);
+  api.get("/auth/me", me);
+  api.post("/auth/logout", logout);
 
   // Trading (auth required)
-  app.get("/api/portfolio", requireUser, getPortfolio);
-  app.post("/api/orders", requireUser, placeOrder);
-  app.get("/api/orders", requireUser, getOrders);
-  app.post("/api/portfolio/reset", requireUser, resetPortfolio);
+  api.get("/portfolio", requireUser, getPortfolio);
+  api.post("/orders", requireUser, placeOrder);
+  api.get("/orders", requireUser, getOrders);
+  api.post("/portfolio/reset", requireUser, resetPortfolio);
+
+  // Mount at both local and Netlify function base paths
+  app.use("/api", api);
+  app.use("/.netlify/functions/api", api);
 
   return app;
 }
