@@ -2,7 +2,7 @@ import type { RequestHandler } from "express";
 import { z } from "zod";
 import { getSql } from "../db";
 import { requireUser } from "./auth";
-import crypto from "crypto";
+import { randomUUID } from "crypto";
 
 const INITIAL_CASH = 100000;
 const BROKERAGE_RATE = 0.0003; // 0.03%
@@ -22,7 +22,7 @@ export const getPortfolio: RequestHandler = async (req: any, res) => {
   let availableCash = cashRows[0]?.available_cash ? Number(cashRows[0].available_cash) : INITIAL_CASH;
 
   if (cashRows.length === 0) {
-    await sql`INSERT INTO portfolios (user_id, available_cash) VALUES (${userId}, ${INITIAL_CASH})`;
+    await sql`INSERT INTO portfolios (id, user_id, available_cash) VALUES (${randomUUID()}, ${userId}, ${INITIAL_CASH})`;
     availableCash = INITIAL_CASH;
   }
 
@@ -88,7 +88,7 @@ export const placeOrder: RequestHandler = async (req: any, res) => {
     const cashRows = (await sql`SELECT available_cash FROM portfolios WHERE user_id = ${userId}`) as any[];
     let availableCash = cashRows[0]?.available_cash ? Number(cashRows[0].available_cash) : INITIAL_CASH;
     if (cashRows.length === 0) {
-      await sql`INSERT INTO portfolios (user_id, available_cash) VALUES (${userId}, ${INITIAL_CASH})`;
+      await sql`INSERT INTO portfolios (id, user_id, available_cash) VALUES (${randomUUID()}, ${userId}, ${INITIAL_CASH})`;
       availableCash = INITIAL_CASH;
     }
 
@@ -114,14 +114,14 @@ export const placeOrder: RequestHandler = async (req: any, res) => {
         `;
       } else {
         await sql`
-          INSERT INTO positions (user_id, symbol, name, quantity, avg_price, invested_value, current_price)
-          VALUES (${userId}, ${body.symbol}, ${body.name}, ${body.quantity}, ${body.price}, ${grossAmount}, ${body.price})
+          INSERT INTO positions (id, user_id, symbol, name, quantity, avg_price, invested_value, current_price)
+          VALUES (${randomUUID()}, ${userId}, ${body.symbol}, ${body.name}, ${body.quantity}, ${body.price}, ${grossAmount}, ${body.price})
         `;
       }
 
       await sql`UPDATE portfolios SET available_cash = ${availableCash - totalAmount} WHERE user_id = ${userId}`;
 
-      const orderId = crypto.randomUUID();
+      const orderId = randomUUID();
       await sql`
         INSERT INTO orders (id, user_id, symbol, name, type, order_type, quantity, price, status, timestamp, brokerage, total_amount)
         VALUES (${orderId}, ${userId}, ${body.symbol}, ${body.name}, ${body.type}, ${body.orderType}, ${body.quantity}, ${body.price}, 'EXECUTED', now(), ${brokerage}, ${grossAmount + brokerage})
@@ -155,7 +155,7 @@ export const placeOrder: RequestHandler = async (req: any, res) => {
 
       await sql`UPDATE portfolios SET available_cash = ${availableCash + netProceeds} WHERE user_id = ${userId}`;
 
-      const orderId = crypto.randomUUID();
+      const orderId = randomUUID();
       await sql`
         INSERT INTO orders (id, user_id, symbol, name, type, order_type, quantity, price, status, timestamp, brokerage, total_amount)
         VALUES (${orderId}, ${userId}, ${body.symbol}, ${body.name}, ${body.type}, ${body.orderType}, ${body.quantity}, ${body.price}, 'EXECUTED', now(), ${sellBrokerage}, ${netProceeds})
