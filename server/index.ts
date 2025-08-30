@@ -10,9 +10,15 @@ export function createServer() {
   const app = express();
 
   // Middleware
-  app.use(cors());
+  app.use(cors({ origin: true, credentials: true }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+  app.use((req, _res, next) => {
+    if (typeof (req as any).body === "string") {
+      try { (req as any).body = JSON.parse((req as any).body || "{}"); } catch {}
+    }
+    next();
+  });
   app.use(cookieParser());
 
   // Ensure DB schema (no-op if already created)
@@ -31,6 +37,11 @@ export function createServer() {
   });
 
   api.get("/demo", handleDemo);
+
+  // Echo endpoint for debugging body parsing
+  api.post("/echo", (req, res) => {
+    res.json({ ok: true, headers: req.headers, body: (req as any).body ?? null });
+  });
 
   // Auth
   api.post("/auth/register", register);
