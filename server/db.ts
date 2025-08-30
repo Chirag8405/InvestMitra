@@ -6,7 +6,9 @@ let _sql: ReturnType<typeof neon> | null = null;
 export function getDatabaseUrl() {
   const candidates = [
     "DATABASE_URL",
+    "NEON_DATABASE_URL",
     "NETLIFY_DATABASE_URL",
+    "NETLIFY_DATABASE_URL_UNPOOLED",
     "POSTGRES_URL",
     "PG_CONNECTION_STRING",
   ] as const;
@@ -24,7 +26,7 @@ export function isDbConfigured() {
 export function getSql() {
   const url = getDatabaseUrl();
   if (!url) {
-    throw new Error("Database connection string not set. Set DATABASE_URL or NETLIFY_DATABASE_URL.");
+    throw new Error("Database connection string not set. Set DATABASE_URL or NEON_DATABASE_URL.");
   }
   if (!_sql) _sql = neon(url);
   return _sql;
