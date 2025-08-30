@@ -34,13 +34,10 @@ export function getSql() {
 
 export async function ensureSchema() {
   const sql = getSql();
-  // Enable pgcrypto for gen_random_uuid()
-  await sql`CREATE EXTENSION IF NOT EXISTS pgcrypto`;
-
   // Users
   await sql`
     CREATE TABLE IF NOT EXISTS users (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      id TEXT PRIMARY KEY,
       email TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -50,8 +47,8 @@ export async function ensureSchema() {
   // Portfolio cash per user
   await sql`
     CREATE TABLE IF NOT EXISTS portfolios (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       available_cash NUMERIC NOT NULL DEFAULT 100000,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
@@ -60,8 +57,8 @@ export async function ensureSchema() {
   // Positions
   await sql`
     CREATE TABLE IF NOT EXISTS positions (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       symbol TEXT NOT NULL,
       name TEXT NOT NULL,
       quantity INTEGER NOT NULL,
@@ -76,8 +73,8 @@ export async function ensureSchema() {
   // Orders
   await sql`
     CREATE TABLE IF NOT EXISTS orders (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       symbol TEXT NOT NULL,
       name TEXT NOT NULL,
       type TEXT NOT NULL,
